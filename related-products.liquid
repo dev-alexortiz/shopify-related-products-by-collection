@@ -1,0 +1,320 @@
+{% if section.settings.show_related_products == true %}
+
+<div class="product-template__container page-width" itemscope itemtype="http://schema.org/Product" id="ProductSection-{{ section.id }}" data-section-id="{{ section.id }}" data-section-type="product" data-enable-history-state="true">
+ 
+{% comment %}
+  Number of related items per row,
+  and number of rows.
+{% endcomment %}
+
+{% assign number_of_related_products_per_row = 4 %}
+{% assign number_of_rows = 1 %}
+
+{% comment %}
+  Heading.
+  Leave blank if you don't need one.
+{% endcomment %}
+
+{% assign heading = 'Related Products' %}
+
+{% comment %}
+  Set either or both to true, if you want
+  to limit yourself to items with same vendor, and/or type.
+{% endcomment %}
+
+{% assign same_vendor = false %}
+{% assign same_type = true %}
+
+{% comment %}
+  Collections to ignore.
+  Never pick related items from those.
+{% endcomment %}
+
+{% assign exclusions = 'frontpage,all' | split: ',' %}
+
+{% comment %}
+  Looking for a relevant collection.
+{% endcomment %}
+
+{% if product.metafields.c_f['Related Products'] %}
+  {% assign collection = collections[product.metafields.c_f['Related Products']] %}
+{% endif %}
+
+{% assign found_a_collection = false %}
+{% if collection and collection.all_products_count > 1 %}
+  {% unless exclusions contains collection.handle %}
+    {% assign found_a_collection = true %}
+  {% endunless %}
+{% endif %}
+{% unless found_a_collection %}
+  {% for c in product.collections %}
+    {% unless exclusions contains c.handle or c.all_products_count < 2 %}
+      {% assign found_a_collection = true %}
+      {% assign collection = c %}
+      {% break %}
+    {% endunless %}
+  {% endfor %}
+{% endunless %}
+
+{% comment %}
+  If we have a relevant collection.
+{% endcomment %}
+
+{% if found_a_collection %}
+
+  {% assign counter = 0 %}
+  {% assign break_at = number_of_rows | times: number_of_related_products_per_row %}
+  {% assign current_product = product %}
+  
+  {% case number_of_related_products_per_row %}
+    {% when '1' %}
+      {% assign grid_item_width = '' %}
+  {%- assign max_height = 700 -%}
+    {% when '2' %}
+      {% assign grid_item_width = 'small--one-half medium-up--one-half' %}
+  	  {%- assign max_height = 530 -%}
+    {% when '3' %}
+      {% assign grid_item_width = 'small--one-half medium-up--one-third' %}
+      {%- assign max_height = 345 -%}
+    {% when '4' %}
+      {% assign grid_item_width = 'small--one-half medium-up--one-quarter' %}
+  {%- assign max_height = 250 -%}
+    {% when '5' %}
+      {% assign grid_item_width = 'small--one-half medium-up--one-fifth' %}
+  {%- assign max_height = 195 -%}
+    {% when '6' %}
+      {% assign grid_item_width = 'small--one-half medium-up--one-sixth' %}
+  {%- assign max_height = 195 -%}
+    {% else %}
+      {% assign grid_item_width = 'small--one-half medium-up--one-quarter' %}
+  {%- assign max_height = 195 -%}
+  {% endcase %}
+
+
+  {% capture related_items %}
+
+
+  {% for product in collection.products %}
+  {%- include 'bold-product' with product, hide_action: 'skip' -%}
+  {% unless product.handle == current_product.handle %}
+  {% unless same_vendor and current_product.vendor != product.vendor %}
+  {% unless same_type and current_product.type != product.type %}
+  <div class="grid__item {{ grid_item_width }}">
+    {% include 'product-card-grid', max_height: max_height %}
+  </div>
+  {% assign counter = counter | plus: 1 %}
+  {% if counter == break_at %}
+  {% break %}
+  {% endif %}
+  {% endunless %}
+  {% endunless %}
+  {% endunless %}
+  {% endfor %}
+</div>
+  {% endcapture %}
+
+  {% assign related_items = related_items | trim %}
+
+  {% unless related_items == blank %}
+
+  <aside class="grid">
+    <div class="grid__item">
+      {% unless heading == blank %}
+      <header class="section-header">
+        <h2 class="section-header__title" style="
+    font-family: Poppins;
+    text-align: center;
+    letter-spacing: 0.6px;
+    font-weight: 500;
+">{{ heading }}</h2>
+      </header>
+      {% endunless %}
+      <div class="grid-uniform">
+        {{ related_items }}
+      </div>
+    </div>
+  </aside>
+
+  {% endunless %}
+     
+{% endif %}
+ 
+  
+
+<style>
+  
+  #ProductSection-related-products .product-price__price{
+    color:#4a4a4a;
+    font-weight:400;
+    
+  }
+  #ProductSection-related-products .product-price__price.product-price__sale{
+    color:#d0021b;
+    font-weight:600 !important;
+  }
+  #ProductSection-related-products .product-price__sale-label{
+    display:none;
+  }
+  
+  #ProductSection-related-products .product-price__sold-out {
+    display:block;
+   	color:#ccc;
+  }
+  
+  #ProductSection-related-products .grid-view-item__title{
+    font-weight:500;
+    font-family:Poppins;
+    color:#333 !important;
+  }
+  
+  #ProductSection-related-products a:hover {
+    color: #333333;
+  }
+  @media only screen and (min-width:750px){
+    #ProductSection-related-products .grid-view-item__title{
+      height:70px !important;
+    }
+  }
+  
+  @media only screen and (max-width:749px){
+      #ProductSection-related-products .grid >.grid__item:first-child{
+        padding:0 !important;
+        width:100%;
+      }
+      #ProductSection-related-products .grid {
+       margin-left:0 !important;
+      }
+    
+      #ProductSection-related-products .grid-uniform .grid__item {
+       padding-left:0 !important;
+      }
+  
+  
+    #ProductSection-related-products .grid-view-item__image{
+    	height: 100%;
+    	width: auto;
+    	margin: 0 auto !important;
+    	position: relative !important;
+    }
+    #ProductSection-related-products .grid-view-item__image-wrapper.js{
+      height:180px !important; 
+    }
+    
+	#ProductSection-related-products .grid-view-item__image-wrapper.js >div:first-child{
+      padding-top:0 !important;
+      height:100% !important;
+    }
+    
+    #ProductSection-related-products .grid-view-item__title{
+      height:50px !important;
+      font-size:16px !important;
+    }
+    
+	#ProductSection-related-products .small--one-half {
+    height: 310px !important;
+	}
+  }
+  
+  @media only screen and (max-width: 479px){
+	body #ProductSection-related-products .h4.grid-view-item__title {
+    	font-size: 14px !important;
+     	height:60px !important;
+	}
+  }
+  
+  @media only screen and (max-width:575px){
+    #ProductSection-related-products h2.section-header__title{
+      font-size:26px !important;
+    }
+  }
+ #ProductSection-related-products .grid-view-item__title, #ProductSection-related-products .grid-view-item__meta{
+    text-align:center !important;
+  }
+
+</style>
+
+
+{% endif %}
+
+{% if collection %}
+  <div class="text-center return-link-wrapper" style="z-index:1000;">
+    <a href="{{ collection.url }}" class="btn btn--secondary btn--has-icon-before return-link">
+      {% include 'icon-arrow-left' %}
+      {{ 'products.product.back_to_collection' | t: title: collection.title }}
+    </a>
+  </div>
+{% endif %}
+
+{% unless product == empty %}
+  <script type="application/json" id="ProductJson-{{ section.id }}">
+    {%- include 'bold-product', output: 'json' -%}
+  </script>
+{% endunless %}
+
+<div class="statement">This statement has not been evaluated by the Food and Drug Administration. This product is not intended to diagnose, treat, cure, or prevent any disease*</div>
+
+
+
+{% schema %}
+{
+  "name": "Related products",
+  "settings": [
+    {
+      "type": "checkbox",
+      "id": "show_related_products",
+      "label": "Show related products",
+      "default": false
+    },
+    {
+      "id": "related_title",
+      "type": "text",
+      "label": "Section title",
+      "default": "Related Products"
+    },
+    {
+      "type": "select",
+      "id": "related_grid_num",
+      "label": "Products per row (Desktop)",
+      "default": "4",
+      "options": [
+        {
+          "value": "2",
+          "label": "2"
+        },
+        {
+          "value": "3",
+          "label": "3"
+        },
+        {
+          "value": "4",
+          "label": "4"
+        },
+        {
+          "value": "5",
+          "label": "5"
+        }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "related_grid_row",
+      "label": "Number of rows (Desktop)",
+      "default": "1",
+      "options": [
+        {
+          "value": "1",
+          "label": "1"
+        },
+        {
+          "value": "2",
+          "label": "2"
+        },
+        {
+          "value": "3",
+          "label": "3"
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}
